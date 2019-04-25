@@ -78,3 +78,7 @@ data_dir:
 	mkdir data/web/extracted
 	mkdir data/web/extracted/log
 	mkdir data/web/raw
+
+## vis
+powertac_logfiles:
+	@$(PYTHON_INTERPRETER) src/$(PROJECT_NAME)/cli/app.py

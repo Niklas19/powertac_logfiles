@@ -1,0 +1,1 @@
+from .components import generate_table # noqa
