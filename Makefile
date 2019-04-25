@@ -80,5 +80,5 @@ data_dir:
 	mkdir data/web/raw
 
 ## vis
-powertac_logfiles:
-	@$(PYTHON_INTERPRETER) src/$(PROJECT_NAME)/cli/app.py
+visualization:
+	@$(PYTHON_INTERPRETER) src/$(PROJECT_NAME)/vis/app.py
