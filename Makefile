@@ -80,5 +80,5 @@ data_dir:
 	mkdir data/web/raw
 
 ## vis
-visualization:
+visual:
 	@$(PYTHON_INTERPRETER) src/$(PROJECT_NAME)/vis/app.py

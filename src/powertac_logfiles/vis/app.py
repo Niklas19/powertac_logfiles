@@ -1,6 +1,7 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import powertac_logfiles.vis.components as cs
 
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -25,7 +26,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'color': c
         'color': colors['text']
     }),
 
-    generate_table(df),
+    cs.generate_table(),
 
     dcc.Graph(
         id='example-graph-2',
