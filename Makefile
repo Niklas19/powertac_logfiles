@@ -82,3 +82,4 @@ data_dir:
 ## vis
 visual:
 	@$(PYTHON_INTERPRETER) src/$(PROJECT_NAME)/vis/app.py
+	open -a firefox -g http://127.0.0.1:8050/
