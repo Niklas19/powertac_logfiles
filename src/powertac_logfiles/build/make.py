@@ -7,6 +7,7 @@ from powertac_logfiles import build as b
 
 
 def make_log_files(local=True):
+    print('Test')
     # check which data dir should be used
     if local:
         log_files = b.get_log_files(data.LOCAL_LOG_DATA_PATH)
@@ -52,3 +53,7 @@ def make_web_log_files():
         data.prepare_web_data(index, game_number)
 
         make_log_files(local=False)
+
+
+if __name__ == '__main__':
+    make_log_files()

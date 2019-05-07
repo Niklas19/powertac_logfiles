@@ -3,7 +3,6 @@ import urllib.request as request
 from powertac_logfiles import data
 from powertac_logfiles import output
 
-
 def get_file_from_url(index, url, file_name):
     try:
         u = request.urlopen(url)

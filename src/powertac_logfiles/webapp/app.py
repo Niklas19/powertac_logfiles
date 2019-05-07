@@ -1,6 +1,7 @@
 import dash
 import flask
 import os
+import threading
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_dangerously_set_inner_html
@@ -10,12 +11,16 @@ from dash.dependencies import Output, Input, State
 from dash.exceptions import PreventUpdate
 from powertac_logfiles import build as b
 
-UPLOAD_FOLDER = "data"
+
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__ ))))
+UPLOAD_FOLDER = os.path.join(BASE_DIR,'data/local')
+ALLOWED_EXTENSIONS = set(['state', 'trace','doc'])
 UPLOAD_COMPONENT = html.Div([
             dash_dangerously_set_inner_html.DangerouslySetInnerHTML('''
 <title>Python Flask File Upload Example</title>
 <h2>Select file(s) to upload</h2>
-<form method="post" action="/" enctype="multipart/form-data">
+<form method="post" action="/upload_file" enctype="multipart/form-data">
     <dl>
 		<p>
 			<input type="file" name="file" multiple="true" autocomplete="off" required>
@@ -25,7 +30,7 @@ UPLOAD_COMPONENT = html.Div([
 		<input type="submit" value="Submit">
 	</p>
 </form>
-    '''),html.Button(children='Convert', id='btn_convert_logs'), html.Output(id='out_convert_logs')
+    '''), html.Button(children='Convert', id='btn_convert_logs', formAction='/generate'), html.Br(),html.Output(id='out_convert_logs')
 ])
 
 
@@ -105,9 +110,9 @@ app.layout = html.Div([
 
 @app.callback(Output('out_convert_logs','children'),
               [Input('btn_convert_logs','n_clicks')])
-def process_log_files(n_clicks):
-    if n_clicks !=0:
-        b.make_log_files()
+def call_process_log_files(n_clicks):
+    if n_clicks !=None:
+        thread_logfile_creation.start()
         return 'Started log file generation successfully!'
 
 @app.callback(Output('tabs-content', 'children'),
@@ -157,31 +162,28 @@ def update_output(n_clicks, data):
         return data.get('Test')
 
 
-
-ALLOWED_EXTENSIONS = set(['state', 'trace', 'png', 'jpg', 'jpeg', 'pdf'])
-
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def process_log_files():
+    b.make_log_files()
 
-@server.route('/', methods=['POST'])
+@server.route('/upload_file', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
-            flash('No file part')
             return redirect(request.url)
         file = request.files['file']
         if file.filename == '':
-            flash('No file selected for uploading')
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(server.config['UPLOAD_FOLDER'], filename))
-            flash('File(s) successfully uploaded')
             return redirect('/')
 
+
+thread_logfile_creation = threading.Thread(target=process_log_files)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
