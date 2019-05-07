@@ -9,8 +9,8 @@ from flask import flash, request, redirect, render_template
 from werkzeug.utils import secure_filename
 from dash.dependencies import Output, Input, State
 from dash.exceptions import PreventUpdate
-from powertac_logfiles import build as b
 
+from powertac_logfiles import build as b
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__ ))))
@@ -121,7 +121,23 @@ def render_content(tab):
 # Tab
     if tab == 'tab-1':
         return html.Div([
-            html.H1(children='About the PowerTAC Analyses Tool')])
+            html.H1(children='About the PowerTAC Analyses Tool'),
+            html.DataTable(
+                css=[{
+                    'selector': '.dash-cell div.dash-cell-value',
+                    'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
+                }],
+                id='table',
+                columns=[{"name": i, "id": i} for i in df_broker_accounting.columns],
+                data=df_broker_accounting.to_dict('records'),
+                style_table={
+                    'maxWidth': '95%',
+                    'overflowX': 'scroll',
+                    'maxHeight': '400px',
+                    'overflowY': 'scroll',
+                },
+            )
+        ])
 
     elif tab == 'tab-2':
         return html.Div([
