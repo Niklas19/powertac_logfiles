@@ -2,6 +2,7 @@ import dash
 import flask
 import os
 import threading
+import dash_table
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_dangerously_set_inner_html
@@ -11,6 +12,7 @@ from dash.dependencies import Output, Input, State
 from dash.exceptions import PreventUpdate
 
 from powertac_logfiles import build as b
+from powertac_logfiles.webapp import helpers as h
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__ ))))
@@ -90,7 +92,6 @@ app.index_string = '''<!DOCTYPE html>
     </body>
 </html>'''
 
-
 app.layout = html.Div([
     html.Header([
         html.H1(children='PowerTAC Analysis Tool'),
@@ -118,27 +119,43 @@ def call_process_log_files(n_clicks):
 @app.callback(Output('tabs-content', 'children'),
               [Input('tabs', 'value')])
 def render_content(tab):
-# Tab
     if tab == 'tab-1':
+        df_tmp = h.get_current_df()
+        games = h.get_games()
+        participating_brokers = h.get_participating_brokers()
         return html.Div([
             html.H1(children='About the PowerTAC Analyses Tool'),
-            html.DataTable(
-                css=[{
-                    'selector': '.dash-cell div.dash-cell-value',
-                    'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
-                }],
-                id='table',
-                columns=[{"name": i, "id": i} for i in df_broker_accounting.columns],
-                data=df_broker_accounting.to_dict('records'),
-                style_table={
-                    'maxWidth': '95%',
-                    'overflowX': 'scroll',
-                    'maxHeight': '400px',
-                    'overflowY': 'scroll',
-                },
-            )
-        ])
 
+            html.Div(dcc.Dropdown(id='dropdown_games',options=games,value=games[0]['value'],clearable=False),style={'width': '100px', 'display': 'inline-block'}),
+
+            html.Div(dcc.Dropdown(id='dropdown_file',
+                options=[
+                    {'label': 'BrokerAccounting', 'value': 'BrokerAccounting'},
+                    {'label': 'BrokerImbalance', 'value': 'BrokerImbalance'},
+                    {'label': 'BrokerMktPrices', 'value': 'BrokerMktPrices'}
+                ],value='BrokerAccounting',clearable=False), style={'width': '300px', 'display': 'inline-block'}),
+
+            html.Div(dcc.Dropdown(id='dropdown_broker',options=participating_brokers,value=None),style={'width': '300px', 'display': 'inline-block'}),
+
+            html.Div(html.Button(id='btn_update_table', children='Update')),
+
+            dash_table.DataTable(id='mytable',
+            css=[{
+                'selector': '.dash-cell div.dash-cell-value',
+                'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
+            }],
+            columns=[{"name": i, "id": i} for i in df_tmp.columns],
+            data=df_tmp.to_dict('rows'),
+            pagination_mode = 'fe',
+            filtering=False,
+            style_table={
+                'maxWidth': '95%',
+                'overflowX': 'scroll',
+                'maxHeight': '400px',
+                'overflowY': 'scroll',
+            },
+        )
+        ])
     elif tab == 'tab-2':
         return html.Div([
             html.H1(children='Market details')
@@ -157,25 +174,23 @@ def render_content(tab):
     elif tab == 'tab-4':
         return UPLOAD_COMPONENT
 
+# @app.callback(Output('session', 'data'),
+#               [Input('btn_store', 'n_clicks')],
+#                [State('input-box', 'value')])
+# def on_click(n_clicks, value):
+#     # Give a default data dict with 0 clicks if there's no data.
+#     if n_clicks!= 0:
+#         data = {'Test': str(value)}
+#         return data
 
-
-@app.callback(Output('session', 'data'),
-              [Input('btn_store', 'n_clicks')],
-               [State('input-box', 'value')])
-def on_click(n_clicks, value):
-    # Give a default data dict with 0 clicks if there's no data.
-    if n_clicks!= 0:
-        data = {'Test': str(value)}
-        return data
-
-@app.callback(Output('output-store', 'children'),
-                [Input('btn_out', 'n_clicks')],
-                [State('session', 'data')])
-def update_output(n_clicks, data):
-    if n_clicks is None:
-        raise PreventUpdate
-    else:
-        return data.get('Test')
+# @app.callback(Output('output-store', 'children'),
+#                 [Input('btn_out', 'n_clicks')],
+#                 [State('session', 'data')])
+# def update_output(n_clicks, data):
+#     if n_clicks is None:
+#         raise PreventUpdate
+#     else:
+#         return data.get('Test')
 
 
 def allowed_file(filename):
@@ -201,5 +216,34 @@ def upload_file():
 
 thread_logfile_creation = threading.Thread(target=process_log_files)
 
+
+@app.callback(Output('mytable', 'columns'),
+            [Input('btn_update_table','n_clicks')],
+              [State('dropdown_games','value'),
+               State('dropdown_broker','value'),
+               State('dropdown_file','value')])
+def update_table(n_clicks, gameid, broker, file):
+    if n_clicks is None:
+        raise PreventUpdate
+    else:
+        print(gameid)
+        print(broker)
+        print(file)
+        return [{"name": i, "id": i} for i in h.get_current_df(gameid, file, broker).columns]
+
+@app.callback(Output('mytable', 'data'),
+            [Input('btn_update_table','n_clicks')],
+              [State('dropdown_games','value'),
+               State('dropdown_broker','value'),
+               State('dropdown_file','value')])
+def update_table2(n_clicks, gameid, broker, file):
+    if n_clicks is None:
+        raise PreventUpdate
+    else:
+        return h.get_current_df(gameid, file, broker).to_dict('rows')
+
+
+
+
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
