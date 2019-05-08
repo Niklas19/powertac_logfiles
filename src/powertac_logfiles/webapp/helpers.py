@@ -19,18 +19,20 @@ def get_current_file(game, file):
     matching_files = glob.glob(PATH_LOGFILES + '*_{}_{}*'.format(game, file))
     return matching_files[0]
 
-def get_current_df(game='1', file='BrokerAccounting', broker=None):
+def get_current_df(game='1', file='BrokerAccounting', broker=[]):
     print('_{}_'.format(game))
     path = get_current_file(game, file)
     print(path)
     df_tmp = pd.read_csv(path, delimiter=';')
     print(df_tmp.head())
-    if broker is None:
-        #print(df_tmp)
+    print(broker)
+
+    if isinstance(broker, str):
+        return df_tmp[df_tmp['broker'].isin([broker])]
+    if len(broker)==0:
         return df_tmp
     else:
-        print(df_tmp[df_tmp['broker'] == broker])
-        return df_tmp[df_tmp['broker'] == broker]
+        return df_tmp[df_tmp['broker'].isin(broker)]
 
 def get_participating_brokers(game='1', file='BrokerAccounting'):
     path = get_current_file(game, file)

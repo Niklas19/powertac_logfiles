@@ -421,6 +421,7 @@ Changes
 
 body{
     margin: 0px !important;
+    text-align: left !important;
 }
 
 header{
@@ -457,3 +458,11 @@ table{
     width: 100%;
 }
 
+
+.dash-spreadsheet{
+    max-width: 100% !important;
+}
+
+#mytable, #mytable-nav{
+    margin: 0px 40px 0px 40px !important;
+}

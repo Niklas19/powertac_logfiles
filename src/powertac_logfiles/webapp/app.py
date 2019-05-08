@@ -21,7 +21,8 @@ ALLOWED_EXTENSIONS = set(['state', 'trace','doc'])
 UPLOAD_COMPONENT = html.Div([
             dash_dangerously_set_inner_html.DangerouslySetInnerHTML('''
 <title>Python Flask File Upload Example</title>
-<h2>Select file(s) to upload</h2>
+<h2 style="margin-top: 0px;">Select file(s) to upload</h2>
+<div style="text-align:center">
 <form method="post" action="/upload_file" enctype="multipart/form-data">
     <dl>
 		<p>
@@ -32,7 +33,9 @@ UPLOAD_COMPONENT = html.Div([
 		<input type="submit" value="Submit">
 	</p>
 </form>
-    '''), html.Button(children='Convert', id='btn_convert_logs', formAction='/generate'), html.Br(),html.Output(id='out_convert_logs')
+</div>
+    '''),
+    html.Div([html.Button(children='Convert', id='btn_convert_logs', formAction='/generate'), html.Br(),html.Output(id='out_convert_logs')],style={'text-align':'center'})
 ])
 
 
@@ -95,17 +98,17 @@ app.index_string = '''<!DOCTYPE html>
 app.layout = html.Div([
     html.Header([
         html.H1(children='PowerTAC Analysis Tool'),
-        html.Img(src='/assets/powertac_header.png'),
-        dcc.Store(id='session', storage_type='session')
+        html.Img(src='/assets/powertac_header.png')
+        #dcc.Store(id='session', storage_type='session')
     ]),
     dcc.Tabs(id="tabs", value='tab-1', children=[
         dcc.Tab(label='About', value='tab-1'),
-        dcc.Tab(label='Market details', value='tab-2'),
-        dcc.Tab(label='KPIs', value='tab-3'),
-        dcc.Tab(label='Settings', value='tab-4'),
+        dcc.Tab(label='Tables', value='tab-2'),
+        dcc.Tab(label='Visualizations', value='tab-3'),
+        dcc.Tab(label='KPIs', value='tab-4'),
     ]),
     html.Div(id='tabs-content')
-], style={'text-align':'center'})
+], style={'text-align':'left'})
 
 
 
@@ -119,13 +122,13 @@ def call_process_log_files(n_clicks):
 @app.callback(Output('tabs-content', 'children'),
               [Input('tabs', 'value')])
 def render_content(tab):
-    if tab == 'tab-1':
+    if tab == 'tab-2':
         df_tmp = h.get_current_df()
         games = h.get_games()
         participating_brokers = h.get_participating_brokers()
         return html.Div([
             html.H1(children='About the PowerTAC Analyses Tool'),
-
+            html.Div([
             html.Div(dcc.Dropdown(id='dropdown_games',options=games,value=games[0]['value'],clearable=False),style={'width': '100px', 'display': 'inline-block'}),
 
             html.Div(dcc.Dropdown(id='dropdown_file',
@@ -135,9 +138,11 @@ def render_content(tab):
                     {'label': 'BrokerMktPrices', 'value': 'BrokerMktPrices'}
                 ],value='BrokerAccounting',clearable=False), style={'width': '300px', 'display': 'inline-block'}),
 
-            html.Div(dcc.Dropdown(id='dropdown_broker',options=participating_brokers,value=None),style={'width': '300px', 'display': 'inline-block'}),
+            html.Div(dcc.Dropdown(id='dropdown_broker',options=participating_brokers,value=[], multi=True),style={'width': '600px', 'display': 'inline-block'}),
 
-            html.Div(html.Button(id='btn_update_table', children='Update')),
+            html.Div(html.Button(id='btn_update_table', children='Update'), style={'display':'inline-block','float': 'right'})],
+
+            style={'vertical-align':'middle','margin':'0px 40px 0px 40px'}),
 
             dash_table.DataTable(id='mytable',
             css=[{
@@ -149,29 +154,29 @@ def render_content(tab):
             pagination_mode = 'fe',
             filtering=False,
             style_table={
-                'maxWidth': '95%',
+                'maxWidth': '100%',
                 'overflowX': 'scroll',
-                'maxHeight': '400px',
+                'maxHeight': '600px',
                 'overflowY': 'scroll',
             },
         )
         ])
-    elif tab == 'tab-2':
+    elif tab == 'tab-4':
         return html.Div([
-            html.H1(children='Market details')
+            html.H1(children='KPIs')
         ])
 
     elif tab == 'tab-3':
         return html.Div([
-            html.H1(children='KPIS'),
-            html.Div(dcc.Input(id='input-box', type='text')),
-            html.Button('Save to Storage', id='btn_store'),
-            html.Br(),
-            html.Button('Show storage', id='btn_out'),
-            html.Div(id='output-store')
+            html.H1(children='Visualization'),
+            # html.Div(dcc.Input(id='input-box', type='text')),
+            # html.Button('Save to Storage', id='btn_store'),
+            # html.Br(),
+            # html.Button('Show storage', id='btn_out'),
+            # html.Div(id='output-store')
         ])
 
-    elif tab == 'tab-4':
+    elif tab == 'tab-1':
         return UPLOAD_COMPONENT
 
 # @app.callback(Output('session', 'data'),
@@ -246,4 +251,4 @@ def update_table2(n_clicks, gameid, broker, file):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
