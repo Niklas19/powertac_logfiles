@@ -1,8 +1,8 @@
 import glob
 import pandas as pd
-import dash_table
+
 PATH_LOGFILES = '/Users/Niklas/dev/powertac_analyzer/powertac_logfiles/data/processed/'
-SUBSTRING_LOGTOOLS = ['BrokerAccounting', 'BrokerBalancing','BrokerMktPrices','TariffMktShare']
+SUBSTRING_LOGTOOLS = ['BrokerAccounting', 'BrokerBalancing','BrokerMktPrices','TariffMktShare', 'BrokerImbalanceCost']
 
 
 def get_games():
@@ -20,12 +20,8 @@ def get_current_file(game, file):
     return matching_files[0]
 
 def get_current_df(game='1', file='BrokerAccounting', broker=[]):
-    print('_{}_'.format(game))
     path = get_current_file(game, file)
-    print(path)
     df_tmp = pd.read_csv(path, delimiter=';')
-    print(df_tmp.head())
-    print(broker)
 
     if isinstance(broker, str):
         return df_tmp[df_tmp['broker'].isin([broker])]
@@ -44,9 +40,6 @@ def get_participating_brokers(game='1', file='BrokerAccounting'):
         tmp['value'] = broker
         list_options.append(tmp)
     return list_options
-
-
-
 
 
 if __name__ == '__main__':

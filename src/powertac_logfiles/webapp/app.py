@@ -13,6 +13,7 @@ from dash.exceptions import PreventUpdate
 
 from powertac_logfiles import build as b
 from powertac_logfiles.webapp import helpers as h
+from powertac_logfiles.webapp import broker_imbalance as bi
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__ ))))
@@ -167,8 +168,15 @@ def render_content(tab):
         ])
 
     elif tab == 'tab-3':
+        games = h.get_games()
         return html.Div([
             html.H1(children='Visualization'),
+            html.Div([
+            html.Div(html.H3(children='Select Game:')),
+            html.Div(dcc.Dropdown(id='vis_dropdown_games',options=games,value=games[0]['value'],clearable=False),style={'width': '100px', 'display': 'inline-block'})
+            ]),
+            html.Div(dcc.Graph(id='vis_imbalance')),
+            html.Div(dcc.Graph(id='vis_imbalance_cost')),
             # html.Div(dcc.Input(id='input-box', type='text')),
             # html.Button('Save to Storage', id='btn_store'),
             # html.Br(),
@@ -221,6 +229,15 @@ def upload_file():
 
 thread_logfile_creation = threading.Thread(target=process_log_files)
 
+@app.callback(Output('vis_imbalance', 'figure'),
+            [Input('vis_dropdown_games','value')])
+def update_fig_imbalance(gameid):
+    return bi.plot_imbalance(gameid, 'imbalance')
+
+@app.callback(Output('vis_imbalance_cost', 'figure'),
+            [Input('vis_dropdown_games','value')])
+def update_fig_imbalance_cost(gameid):
+    return bi.plot_imbalance(gameid, 'imbalanceCost')
 
 @app.callback(Output('mytable', 'columns'),
             [Input('btn_update_table','n_clicks')],
@@ -231,9 +248,6 @@ def update_table(n_clicks, gameid, broker, file):
     if n_clicks is None:
         raise PreventUpdate
     else:
-        print(gameid)
-        print(broker)
-        print(file)
         return [{"name": i, "id": i} for i in h.get_current_df(gameid, file, broker).columns]
 
 @app.callback(Output('mytable', 'data'),
@@ -246,8 +260,6 @@ def update_table2(n_clicks, gameid, broker, file):
         raise PreventUpdate
     else:
         return h.get_current_df(gameid, file, broker).to_dict('rows')
-
-
 
 
 if __name__ == '__main__':
