@@ -47,3 +47,7 @@ make powertac_logfiles
 
 **[c]**: show a small help
  
+### Webapp
+```
+make webapp
+```
