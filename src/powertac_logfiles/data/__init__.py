@@ -18,7 +18,7 @@ RAW_DATA_PATH = PROJECT_DIR + '/data/web/raw/'
 EXTRACTED_DATA_PATH = PROJECT_DIR + '/data/web/extracted/'
 WEB_LOG_DATA_PATH = EXTRACTED_DATA_PATH + 'log/'
 URL = 'http://ts.powertac.org/log/'
-FILE_NAME = 'PowerTAC_2018_Finals'
+FILE_NAME = 'finals_2019_07'
 FILE_NAME_ = FILE_NAME + '_'
 FILE_TYPE = '.tar.gz'
 

@@ -56,4 +56,5 @@ def make_web_log_files():
 
 
 if __name__ == '__main__':
-    make_log_files()
+    make_web_log_files()
+
